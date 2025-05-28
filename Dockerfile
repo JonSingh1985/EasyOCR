@@ -1,10 +1,10 @@
-# Use slim base to reduce image size
+# Use a minimal base image
 FROM python:3.10-slim
 
-# Set working directory
+# Set working directory inside container
 WORKDIR /app
 
-# Install required system packages
+# Install only necessary system packages
 RUN apt-get update && apt-get install -y \
     build-essential \
     libgl1 \
@@ -13,18 +13,20 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     tesseract-ocr \
-    wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Copy requirement file
 COPY requirements.txt .
+
+# Install Python dependencies without pip cache
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app files
+# Copy the server code
 COPY server.py .
 
-# Expose port
+# Expose the FastAPI port
 EXPOSE 8000
 
-# Start server
+# Run the FastAPI app
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
+
