@@ -1,32 +1,28 @@
-# Use a minimal base image
 FROM python:3.10-slim
 
-# Set working directory inside container
-WORKDIR /app
+# Prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install only necessary system packages
-RUN apt-get update && apt-get install -y \
-    build-essential \
+# Install only minimal required system packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 \
     libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
-    tesseract-ocr \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy requirement file
+# Create app directory
+WORKDIR /app
+
+# Copy only necessary files
 COPY requirements.txt .
 
-# Install Python dependencies without pip cache
+# Install Python dependencies using no cache
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the server code
+# Copy the app code
 COPY server.py .
 
-# Expose the FastAPI port
+# Expose the app port
 EXPOSE 8000
 
-# Run the FastAPI app
+# Start the server
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]
-
